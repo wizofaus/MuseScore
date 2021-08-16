@@ -1587,16 +1587,23 @@ void EditStyle::setValues()
     disableVerticalSpread->setChecked(!styleValue(StyleId::enableVerticalSpread).toBool());
 }
 
+mu::io::path EditStyle::selectStyleFile(std::shared_ptr<mu::framework::IInteractive> interactive,
+                                        std::shared_ptr<INotationConfiguration> configuration, bool forLoad)
+{
+    io::path dir = configuration->userStylesPath();
+    QString filter = qtrc("notation", "MuseScore Styles") + " (*.mss)";
+    return forLoad
+           ? interactive->selectOpeningFile(qtrc("notation", "Load Style"), dir, filter)
+           : interactive->selectSavingFile(qtrc("notation", "Save Style"), dir, filter);
+}
+
 //---------------------------------------------------------
 //   selectChordDescriptionFile
 //---------------------------------------------------------
 
 void EditStyle::selectChordDescriptionFile()
 {
-    io::path dir = configuration()->userStylesPath();
-    QString filter = qtrc("notation", "MuseScore Styles") + " (*.mss)";
-
-    mu::io::path path = interactive()->selectOpeningFile(qtrc("notation", "Load Style"), dir, filter);
+    mu::io::path path = selectStyleFile(interactive(), configuration());
     if (path.empty()) {
         return;
     }

@@ -636,7 +636,7 @@ void EditDrumsetDialog::load()
                         IInteractive::Button::Ignore
                     }, IInteractive::Button::Cancel);
 
-                if (result.standartButton() != IInteractive::Button::Ignore) { // covers Cancel and Esc
+                if (result.standardButton() != IInteractive::Button::Ignore) { // covers Cancel and Esc
                     return;
                 }
             }

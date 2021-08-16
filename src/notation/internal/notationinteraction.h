@@ -32,6 +32,7 @@
 #include "inotationconfiguration.h"
 #include "inotationundostack.h"
 #include "iselectinstrumentscenario.h"
+#include "iinteractive.h"
 
 #include "libmscore/element.h"
 #include "libmscore/elementgroup.h"
@@ -42,12 +43,15 @@ class ShadowNote;
 class Lasso;
 }
 
+using mu::framework::IInteractive;
+
 namespace mu::notation {
 class Notation;
 class NotationInteraction : public INotationInteraction, public async::Asyncable
 {
     INJECT(notation, INotationConfiguration, configuration)
     INJECT(notation, ISelectInstrumentsScenario, selectInstrumentScenario)
+    INJECT(notation, IInteractive, interactive)
 
 public:
     NotationInteraction(Notation* notation, INotationUndoStackPtr undoStack);
@@ -203,6 +207,9 @@ public:
     void toggleBold() override;
     void toggleItalic() override;
     void toggleUnderline() override;
+
+    void loadStyle(const mu::io::path&) override;
+    void saveStyle(const mu::io::path&) override;
 
 private:
     Ms::Score* score() const;

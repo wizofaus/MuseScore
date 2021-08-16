@@ -57,6 +57,7 @@
 #include "libmscore/lasso.h"
 #include "libmscore/textedit.h"
 #include "libmscore/lyrics.h"
+#include "style/style.h"
 
 #include "masternotation.h"
 #include "scorecallbacks.h"
@@ -3503,4 +3504,36 @@ void NotationInteraction::toggleItalic()
 void NotationInteraction::toggleUnderline()
 {
     toggleFontStyle(Ms::FontStyle::Underline);
+}
+
+void NotationInteraction::loadStyle(const mu::io::path& stylePath)
+{
+    QFile f(stylePath.toQString());
+    if (!f.open(QIODevice::ReadOnly) || !Ms::MStyle::isValid(&f)) {
+        interactive()->error(trc("notation", "The style file could not be loaded."),
+                             f.errorString().toStdString(), { IInteractive::Button::Ok },
+                             IInteractive::Button::Ok, IInteractive::Option::WithIcon);
+        return;
+    }
+
+    startEdit();
+    if (!score()->loadStyle(stylePath.toQString()) && interactive()->warning(
+            trc("notation",
+                "Since this style file is from a different version of MuseScore, your score is not guaranteed to display correctly."),
+            trc("notation", "Click OK to load anyway."), { IInteractive::Button::Ok, IInteractive::Button::Cancel },
+            IInteractive::Button::Ok, IInteractive::Option::WithIcon).standardButton()
+        == IInteractive::Button::Ok) {
+        score()->loadStyle(stylePath.toQString(), true);
+    }
+    apply();
+    notifyAboutSelectionChanged();
+}
+
+void NotationInteraction::saveStyle(const mu::io::path& stylePath)
+{
+    if (!score()->saveStyle(stylePath.toQString())) {
+        interactive()->error(trc("notation", "The style file could not be saved."),
+                             Ms::MScore::lastError.toStdString(), { IInteractive::Button::Ok },
+                             IInteractive::Button::Ok, IInteractive::Option::WithIcon);
+    }
 }

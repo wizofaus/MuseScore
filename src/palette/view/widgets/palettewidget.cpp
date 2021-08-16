@@ -1065,7 +1065,7 @@ void PaletteWidget::contextMenuEvent(QContextMenuEvent* event)
                 IInteractive::Button::No
             }, IInteractive::Button::Yes);
 
-            if (result.standartButton() != IInteractive::Button::Yes) {
+            if (result.standardButton() != IInteractive::Button::Yes) {
                 return;
             }
             m_palette->takeCell(i);

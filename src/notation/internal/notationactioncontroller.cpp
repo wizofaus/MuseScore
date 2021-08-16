@@ -25,6 +25,7 @@
 
 #include "log.h"
 #include "notationtypes.h"
+#include "view/widgets/editstyle.h"
 
 using namespace mu::notation;
 using namespace mu::actions;
@@ -205,6 +206,8 @@ void NotationActionController::init()
     registerAction("staff-text-properties", &NotationActionController::openStaffTextPropertiesDialog);
     registerAction("system-text-properties", &NotationActionController::openStaffTextPropertiesDialog);
     registerAction("measure-properties", &NotationActionController::openMeasurePropertiesDialog);
+    registerAction("load-style", &NotationActionController::loadStyle);
+    registerAction("save-style", &NotationActionController::saveStyle);
 
     registerAction("voice-x12", [this]() { swapVoices(0, 1); });
     registerAction("voice-x13", [this]() { swapVoices(0, 2); });
@@ -1507,6 +1510,22 @@ void NotationActionController::openTransposeDialog()
 void NotationActionController::openPartsDialog()
 {
     interactive()->open("musescore://notation/parts");
+}
+
+void NotationActionController::loadStyle()
+{
+    auto path = EditStyle::selectStyleFile(interactive(), configuration());
+    if (!path.empty()) {
+        currentNotationInteraction()->loadStyle(path);
+    }
+}
+
+void NotationActionController::saveStyle()
+{
+    auto path = EditStyle::selectStyleFile(interactive(), configuration(), /*forLoad*/ false);
+    if (!path.empty()) {
+        currentNotationInteraction()->saveStyle(path);
+    }
 }
 
 FilterElementsOptions NotationActionController::elementsFilterOptions(const Element* element) const

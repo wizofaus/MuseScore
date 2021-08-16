@@ -183,6 +183,8 @@ private:
     void openTupletOtherDialog();
     void openStaffTextPropertiesDialog();
     void openMeasurePropertiesDialog();
+    void loadStyle();
+    void saveStyle();
 
     void toggleScoreConfig(ScoreConfigType configType);
     void toggleNavigator();

@@ -277,7 +277,7 @@ bool PartListModel::userAgreesToRemoveParts(int partCount) const
         IInteractive::Button::Yes, IInteractive::Button::No
     });
 
-    return result.standartButton() == IInteractive::Button::Yes;
+    return result.standardButton() == IInteractive::Button::Yes;
 }
 
 QList<int> PartListModel::selectedRows() const

@@ -44,6 +44,8 @@ public:
     void setPage(int idx);
     void gotoElement(Element* e);
     static bool elementHasPage(Element* e);
+    static mu::io::path selectStyleFile(std::shared_ptr<mu::framework::IInteractive>, std::shared_ptr<INotationConfiguration>,
+                                        bool forLoad = true);
 
 public slots:
     void accept();
