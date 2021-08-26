@@ -29,6 +29,8 @@
 #include "style/style.h"
 #include "io/xml.h"
 
+#include "layout/layouttremolo.h"
+
 #include "score.h"
 #include "staff.h"
 #include "chord.h"
@@ -309,8 +311,6 @@ void Tremolo::layoutOneNoteTremolo(qreal x, qreal y, qreal spatium)
     setPos(x, y);
 }
 
-extern std::pair<qreal, qreal> extendedStemLenWithTwoNoteTremolo(Tremolo*, qreal, qreal);
-
 //---------------------------------------------------------
 //   layoutTwoNotesTremolo
 //---------------------------------------------------------
@@ -325,23 +325,6 @@ void Tremolo::layoutTwoNotesTremolo(qreal x, qreal y, qreal h, qreal spatium)
     //---------------------------------------------------
 
     y += (h - bbox().height()) * .5;
-
-#if 0 // Needs to be done earlier, see connectTremolo in layout.cpp
-    Segment* s = _chord1->segment()->next();
-    while (s) {
-        if (s->element(track()) && (s->element(track())->isChord())) {
-            break;
-        }
-        s = s->next();
-    }
-    if (s == 0) {
-        qDebug("no second note of tremolo found");
-        return;
-    }
-
-    _chord2 = toChord(s->element(track()));
-    _chord2->setTremolo(this);
-#endif
 
     Stem* stem1 = _chord1->stem();
     Stem* stem2 = _chord2->stem();
@@ -359,7 +342,8 @@ void Tremolo::layoutTwoNotesTremolo(qreal x, qreal y, qreal h, qreal spatium)
     } else {
         firstChordStaffY = _chord1->pagePos().y() - _chord1->y();      // y coordinate of the staff of the first chord
         const std::pair<qreal, qreal> extendedLen
-            = extendedStemLenWithTwoNoteTremolo(this, _chord1->defaultStemLength(), _chord2->defaultStemLength());
+            = mu::engraving::LayoutTremolo::extendedStemLenWithTwoNoteTremolo(this, _chord1->defaultStemLength(),
+                                                                              _chord2->defaultStemLength());
         y1 = _chord1->stemPos().y() - firstChordStaffY + extendedLen.first;
         y2 = _chord2->stemPos().y() - firstChordStaffY + extendedLen.second;
     }

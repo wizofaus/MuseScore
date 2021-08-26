@@ -19,8 +19,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef MU_SCORE_ACCESSIBLESCORE_H
-#define MU_SCORE_ACCESSIBLESCORE_H
+#ifndef MU_ENGRAVING_ACCESSIBLESCORE_H
+#define MU_ENGRAVING_ACCESSIBLESCORE_H
 
 #include "modularity/ioc.h"
 #include "accessibility/iaccessible.h"
@@ -29,7 +29,7 @@
 #include "accessibleelement.h"
 #include "libmscore/masterscore.h"
 
-namespace mu::score {
+namespace mu::engraving {
 class AccessibleScore : public accessibility::IAccessible
 {
     INJECT(score, accessibility::IAccessibilityController, accessibilityController)
@@ -54,6 +54,7 @@ public:
     const IAccessible* accessibleChild(size_t i) const override;
     Role accessibleRole() const override;
     QString accessibleName() const override;
+    QString accessibleDescription() const override;
     bool accessibleState(State st) const override;
     QRect accessibleRect() const override;
     mu::async::Channel<Property> accessiblePropertyChanged() const override;
@@ -70,4 +71,4 @@ private:
 };
 }
 
-#endif // MU_SCORE_ACCESSIBLESCORE_H
+#endif // MU_ENGRAVING_ACCESSIBLESCORE_H

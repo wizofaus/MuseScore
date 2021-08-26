@@ -24,27 +24,28 @@
 
 #include <cmath>
 
-#include <libmscore/part.h>
-#include <libmscore/staff.h>
-#include <libmscore/measure.h>
-#include <libmscore/symbol.h>
-#include <libmscore/tie.h>
-#include <libmscore/bend.h>
-#include <libmscore/timesig.h>
-#include <libmscore/sym.h>
-#include <libmscore/articulation.h>
-#include <libmscore/tuplet.h>
-#include <libmscore/instrument.h>
-#include <libmscore/clef.h>
-#include <libmscore/rest.h>
-#include <libmscore/stafftext.h>
-#include <libmscore/chord.h>
-#include <libmscore/tempotext.h>
-#include <libmscore/excerpt.h>
-#include <libmscore/rehearsalmark.h>
-#include <libmscore/bracketItem.h>
-#include <libmscore/box.h>
-#include <libmscore/palmmute.h>
+#include "libmscore/articulation.h"
+#include "libmscore/bend.h"
+#include "libmscore/box.h"
+#include "libmscore/bracketItem.h"
+#include "libmscore/chord.h"
+#include "libmscore/clef.h"
+#include "libmscore/excerpt.h"
+#include "libmscore/instrument.h"
+#include "libmscore/masterscore.h"
+#include "libmscore/measure.h"
+#include "libmscore/palmmute.h"
+#include "libmscore/part.h"
+#include "libmscore/rehearsalmark.h"
+#include "libmscore/rest.h"
+#include "libmscore/staff.h"
+#include "libmscore/stafftext.h"
+#include "libmscore/sym.h"
+#include "libmscore/symbol.h"
+#include "libmscore/tempotext.h"
+#include "libmscore/tie.h"
+#include "libmscore/timesig.h"
+#include "libmscore/tuplet.h"
 
 namespace Ms {
 bool PowerTab::readBoolean()
@@ -335,7 +336,6 @@ void PowerTab::readGuitarIn(ptTrack& info)
     gin.rhytmSlash = readUChar();
     gin.trackinfo = readUChar();
     info.guitar_ins.push_back(gin);
-    //info.getSection(section).getPosition(position).addComponent(new ptGuitarIn(staff, inf));
 }
 
 void PowerTab::readTempoMarker(ptTrack& info)
@@ -346,16 +346,8 @@ void PowerTab::readTempoMarker(ptTrack& info)
     /*auto data =*/ readShort();
     readString();   //description
 
-#if 0 // TODO-ws
-    int tripletFeel = 0;
-    if (data & 0x01) {
-        tripletFeel = 8;
-    } else if (data & 0x02) {
-        tripletFeel = 16;
-    }
-#endif
     if (tempo > 0) {
-        info.getSection(section).tempo = tempo;    //.getPosition(position).addComponent(new ptTempo(tempo));
+        info.getSection(section).tempo = tempo;
     }
 }
 

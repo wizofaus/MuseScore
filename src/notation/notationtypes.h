@@ -53,6 +53,8 @@
 #include "libmscore/realizedharmony.h"
 #include "libmscore/instrument.h"
 
+#include "engraving/layout/layoutoptions.h"
+
 namespace mu::notation {
 using Page = Ms::Page;
 using Element = Ms::Element;
@@ -63,7 +65,7 @@ using DurationType = Ms::TDuration::DurationType;
 using Duration = Ms::TDuration;
 using SelectType = Ms::SelectType;
 using Pad = Ms::Pad;
-using ViewMode = Ms::LayoutMode;
+using ViewMode = engraving::LayoutMode;
 using PitchMode = Ms::UpDownMode;
 using StyleId = Ms::Sid;
 using SymbolId = Ms::SymId;
@@ -136,6 +138,8 @@ using InstrumentGenreList = QList<const InstrumentGenre*>;
 using ScoreOrderList = QList<const ScoreOrder*>;
 using InstrumentGroupList = QList<const InstrumentGroup*>;
 using MidiArticulationList = QList<MidiArticulation>;
+
+static const QString COMMON_GENRE_ID("common");
 
 enum class DragMode
 {
@@ -309,11 +313,9 @@ struct PitchRange
     }
 };
 
-static const QString COMMON_GENRE_ID("common");
-
 struct InstrumentKey
 {
-    ID instrumentId;
+    QString instrumentId;
     ID partId;
     Fraction tick = Ms::Fraction(0, 1);
 };
@@ -581,6 +583,15 @@ struct ScoreCreateOptions
     PartInstrumentList parts;
     ScoreOrder order;
 };
+
+inline ScoreOrder makeCustomOrder()
+{
+    ScoreOrder order;
+    order.id = "custom";
+    order.name = qtrc("OrderXML", "Custom");
+
+    return order;
+}
 
 static constexpr int MIN_NOTES_INTERVAL = -9;
 static constexpr int MAX_NOTES_INTERVAL = 9;

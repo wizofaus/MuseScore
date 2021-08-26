@@ -24,13 +24,13 @@
 
 #include "../abbasestep.h"
 #include "modularity/ioc.h"
-#include "userscores/ifilescorecontroller.h"
+#include "project/iprojectfilescontroller.h"
 #include "io/path.h"
 
 namespace mu::autobot {
 class AbScoreLoadStep : public AbBaseStep
 {
-    INJECT(autobot, mu::userscores::IFileScoreController, fileScoreController)
+    INJECT(autobot, project::IFileScoreController, fileScoreController)
 public:
     AbScoreLoadStep() = default;
 

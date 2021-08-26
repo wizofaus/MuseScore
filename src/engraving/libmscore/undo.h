@@ -29,6 +29,7 @@
 */
 
 #include "style/style.h"
+#include "compat/midi/midipatch.h"
 
 #include "spatium.h"
 #include "mscore.h"
@@ -52,8 +53,6 @@
 #include "drumset.h"
 #include "rest.h"
 #include "fret.h"
-
-#include "framework/midi_old/midipatch.h"
 
 namespace Ms {
 class ElementList;
@@ -96,8 +95,6 @@ class Excerpt;
 class EditData;
 
 #define UNDO_NAME(a)  virtual const char* name() const override { return a; }
-
-enum class LayoutMode : char;
 
 //---------------------------------------------------------
 //   UndoCommand
@@ -1107,25 +1104,6 @@ public:
     ChangeClefType(Clef*, ClefType cl, ClefType tc);
     UNDO_NAME("ChangeClef")
 };
-
-//---------------------------------------------------------
-//   MoveStaff
-//---------------------------------------------------------
-#if 0 // commented out in mscore/instrwidget.cpp, not used anywhere else
-class MoveStaff : public UndoCommand
-{
-    Staff* staff;
-    Part* part;
-    int rstaff;
-
-    void flip(EditData*) override;
-
-public:
-    MoveStaff(Staff* s, Part* p, int idx)
-        : staff(s), part(p), rstaff(idx) {}
-    UNDO_NAME("MoveStaff")
-};
-#endif
 
 //---------------------------------------------------------
 //   ChangeProperty

@@ -48,7 +48,11 @@
 #include "groups.h"
 #include "spanner.h"
 
+#include "layout/layoutbeams.h"
+#include "layout/layoutchords.h"
+
 using namespace mu;
+using namespace mu::engraving;
 
 namespace Ms {
 static const ElementStyle beamStyle {
@@ -314,25 +318,6 @@ bool Beam::twoBeamedNotes()
     int dist2     = c2->upLine() - upDnLimit;
     if ((dist1 == -dist2) || (-dist1 == dist2)) {
         _up = false;
-#if 0
-        // this code appears to implement a rule
-        // that says two middle-line beamed notes
-        // should follow the same beam direction as a previous beam group
-        // but we don't follow this rule for single notes or for larger beam groups
-        // also, it makes little sense to follow it if the previous group
-        // is in another measure, which may end up on another system or page
-        Segment* s = c1->segment();
-        s = s->prev1(SegmentType::ChordRest);
-        if (s) {
-            Element* e = s->element(c1->track());
-            if (e && e->isChord()) {
-                Chord* c = toChord(e);
-                if (c->beam()) {
-                    _up = c->beam()->up();
-                }
-            }
-        }
-#endif
     } else if (qAbs(dist1) > qAbs(dist2)) {
         _up = dist1 > 0;
     } else {
@@ -617,7 +602,6 @@ void Beam::layout()
             a[2] = PointF(bs->x2(), bs->y2());
             a[3] = PointF(bs->x1(), bs->y1());
             RectF r(a.boundingRect().adjusted(0.0, -lw2, 0.0, lw2));
-//TODO                  s.add(r.translated(-offset));
             addbbox(r);
         }
     }
@@ -1619,7 +1603,7 @@ void Beam::computeStemLen(const std::vector<ChordRest*>& cl, qreal& py1, int bea
 void Beam::layout2(std::vector<ChordRest*> crl, SpannerSegmentType, int frag)
 {
     if (_distribute) {
-        score()->respace(&crl);           // fix horizontal spacing of stems
+        LayoutBeams::respace(&crl);           // fix horizontal spacing of stems
     }
     if (crl.empty()) {                  // no beamed Elements
         return;
@@ -1695,14 +1679,14 @@ void Beam::layout2(std::vector<ChordRest*> crl, SpannerSegmentType, int frag)
                     c->setUp(nup);
                     // guess was wrong, have to relayout
                     if (!_isGrace) {
-                        score()->layoutChords1(c->segment(), c->staffIdx());
+                        mu::engraving::LayoutChords::layoutChords1(score(), c->segment(), c->staffIdx());
                         // DEBUG: attempting to layout during beam edit causes crash
                         // probably because ledger lines are deleted and added back
                         // if (editFragment == -1)
                         c->layout();
                     } else {
                         relayoutGrace = true;
-                        score()->layoutChords3(c->notes(), c->staff(), 0);
+                        mu::engraving::LayoutChords::layoutChords3(score(), c->notes(), c->staff(), 0);
                     }
                 }
             }
@@ -1745,7 +1729,7 @@ void Beam::layout2(std::vector<ChordRest*> crl, SpannerSegmentType, int frag)
                 if (c->up() != nup) {
                     c->setUp(nup);
                     // guess was wrong, have to relayout
-                    score()->layoutChords1(c->segment(), c->staffIdx());
+                    mu::engraving::LayoutChords::layoutChords1(score(), c->segment(), c->staffIdx());
                     c->layout();
                     // TODO: this might affect chord space, which might affect segment position
                     // we should relayout entire measure

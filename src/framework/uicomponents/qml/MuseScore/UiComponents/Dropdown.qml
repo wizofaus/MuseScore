@@ -50,6 +50,8 @@ Item {
 
     property alias navigation: mainItem.navigation
 
+    signal activated(int index)
+
     height: 30
     width: 126
 
@@ -138,6 +140,12 @@ Item {
         }
     }
 
+    function ensureActiveFocus() {
+        if (mainItem.navigation) {
+            mainItem.navigation.requestActive()
+        }
+    }
+
     DropdownItem {
         id: mainItem
         anchors.fill: parent
@@ -149,19 +157,6 @@ Item {
         onClicked: {
             popup.navigationParentControl = root.navigation
             popup.open()
-        }
-
-        mouseArea.onWheel: {
-            var angleY = wheel.angleDelta.y
-            if (angleY > 0) {
-                if (root.currentIndex > 0) {
-                    root.currentIndex -= 1
-                }
-            } else {
-                if (root.currentIndex < (root.count - 1)) {
-                    root.currentIndex += 1
-                }
-            }
         }
     }
 
@@ -288,7 +283,7 @@ Item {
                     ScrollBar.vertical: StyledScrollBar {
                         anchors.right: parent.right
                         anchors.rightMargin: 4
-                        width: 4
+                        width: 6
                     }
 
                     delegate: DropdownItem {
@@ -319,6 +314,8 @@ Item {
                         onClicked: {
                             root.currentIndex = model.index
                             popup.closeAndReturnFocus()
+
+                            root.activated(root.currentIndex)
                         }
                     }
                 }

@@ -110,14 +110,6 @@ void TextLineBaseSegment::draw(mu::draw::Painter* painter) const
     }
 
     // color for line (text color comes from the text properties)
-#if 0
-    Color color;
-    if ((selected() && !(score() && score()->printing())) || !tl->visible() || !tl->lineVisible()) {
-        color = curColor(tl->visible() && tl->lineVisible());
-    } else {
-        color = tl->lineColor();
-    }
-#endif
     Color color = curColor(tl->visible() && tl->lineVisible(), tl->lineColor());
 
     qreal textlineLineWidth = tl->lineWidth();
@@ -466,7 +458,7 @@ void TextLineBaseSegment::spatiumChanged(qreal ov, qreal nv)
     _endText->spatiumChanged(ov, nv);
 }
 
-static constexpr std::array<Pid, 26> pids = { {
+static constexpr std::array<Pid, 26> TextLineBasePropertyId = { {
     Pid::LINE_VISIBLE,
     Pid::BEGIN_HOOK_TYPE,
     Pid::BEGIN_HOOK_HEIGHT,
@@ -501,7 +493,7 @@ static constexpr std::array<Pid, 26> pids = { {
 
 Element* TextLineBaseSegment::propertyDelegate(Pid pid)
 {
-    for (Pid id : pids) {
+    for (Pid id : TextLineBasePropertyId) {
         if (pid == id) {
             return spanner();
         }
@@ -568,7 +560,7 @@ void TextLineBase::spatiumChanged(qreal /*ov*/, qreal /*nv*/)
 
 void TextLineBase::writeProperties(XmlWriter& xml) const
 {
-    for (Pid pid : pids) {
+    for (Pid pid : TextLineBasePropertyId) {
         if (!isStyled(pid)) {
             writeProperty(xml, pid);
         }
@@ -583,7 +575,7 @@ void TextLineBase::writeProperties(XmlWriter& xml) const
 bool TextLineBase::readProperties(XmlReader& e)
 {
     const QStringRef& tag(e.name());
-    for (Pid i : pids) {
+    for (Pid i : TextLineBasePropertyId) {
         if (readProperty(tag, e, i)) {
             setPropertyFlags(i, PropertyFlags::UNSTYLED);
             return true;
@@ -598,7 +590,7 @@ bool TextLineBase::readProperties(XmlReader& e)
 
 Pid TextLineBase::propertyId(const QStringRef& name) const
 {
-    for (Pid pid : pids) {
+    for (Pid pid : TextLineBasePropertyId) {
         if (propertyName(pid) == name) {
             return pid;
         }

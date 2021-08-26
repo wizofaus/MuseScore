@@ -33,22 +33,21 @@
 
 #include "modularity/ioc.h"
 #include "ui/imainwindow.h"
-#include "actions/iactionsdispatcher.h"
-#include "actions/actionable.h"
-#include "global/iinteractive.h"
 #include "accessibility/iaccessibilityconfiguration.h"
 
 class QAccessibleInterface;
 class QAccessibleEvent;
 
+namespace mu::diagnostics {
+class DiagnosticAccessibleModel;
+}
+
 namespace mu::accessibility {
-class AccessibilityController : public IAccessibilityController, public IAccessible, public async::Asyncable, public actions::Actionable,
+class AccessibilityController : public IAccessibilityController, public IAccessible, public async::Asyncable,
     public std::enable_shared_from_this<AccessibilityController>
 {
     INJECT(accessibility, IAccessibilityConfiguration, configuration)
     INJECT(accessibility, ui::IMainWindow, mainWindow)
-    INJECT(accessibility, actions::IActionsDispatcher, dispatcher)
-    INJECT(accessibility, framework::IInteractive, interactive)
 
 public:
     AccessibilityController() = default;
@@ -71,6 +70,7 @@ public:
 
     Role accessibleRole() const override;
     QString accessibleName() const override;
+    QString accessibleDescription() const override;
     bool accessibleState(State st) const override;
     QRect accessibleRect() const override;
 
@@ -83,7 +83,11 @@ public:
     QAccessibleInterface* child(const IAccessible* item, int i) const;
     int indexOfChild(const IAccessible* item, const QAccessibleInterface* iface) const;
 
+    async::Channel<QAccessibleEvent*> eventSent() const;
+
 private:
+
+    friend class mu::diagnostics::DiagnosticAccessibleModel;
 
     struct Item
     {
@@ -104,6 +108,7 @@ private:
     QHash<const IAccessible*, Item> m_allItems;
 
     QList<IAccessible*> m_children;
+    async::Channel<QAccessibleEvent*> m_eventSent;
 };
 }
 

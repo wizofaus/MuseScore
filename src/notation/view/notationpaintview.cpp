@@ -147,6 +147,20 @@ void NotationPaintView::zoomOut()
     m_inputController->zoomOut();
 }
 
+void NotationPaintView::selectOnNavigationActive()
+{
+    if (!notation()) {
+        return;
+    }
+
+    auto interaction = notation()->interaction();
+    if (!interaction->selection()->isNone()) {
+        return;
+    }
+
+    interaction->selectFirstElement(false);
+}
+
 bool NotationPaintView::canReceiveAction(const actions::ActionCode& actionCode) const
 {
     if (actionCode == "file-open") {
@@ -910,7 +924,7 @@ const Page* NotationPaintView::pointToPage(const PointF& point) const
     }
 
     PageList pages = notationElements()->pages();
-    if (notation()->viewMode() == Ms::LayoutMode::LINE) {
+    if (notation()->viewMode() == engraving::LayoutMode::LINE) {
         return pages.empty() ? nullptr : pages.front();
     }
 

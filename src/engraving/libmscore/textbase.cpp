@@ -2091,22 +2091,11 @@ void TextBase::layoutFrame()
     }
 
     if (square()) {
-#if 0
-        // "real" square
-        if (frame.width() > frame.height()) {
-            qreal w = frame.width() - frame.height();
-            frame.adjust(0.0, -w * .5, 0.0, w * .5);
-        } else {
-            qreal w = frame.height() - frame.width();
-            frame.adjust(-w * .5, 0.0, w * .5, 0.0);
-        }
-#else
         // make sure width >= height
         if (frame.height() > frame.width()) {
             qreal w = frame.height() - frame.width();
             frame.adjust(-w * .5, 0.0, w * .5, 0.0);
         }
-#endif
     } else if (circle()) {
         if (frame.width() > frame.height()) {
             frame.setY(frame.y() + (frame.width() - frame.height()) * -.5);
@@ -2430,7 +2419,7 @@ void TextBase::writeProperties(XmlWriter& xml, bool writeText, bool /*writeStyle
     }
 }
 
-static constexpr std::array<Pid, 18> pids { {
+static constexpr std::array<Pid, 18> TextBasePropertyId { {
     Pid::SUB_STYLE,
     Pid::FONT_FACE,
     Pid::FONT_SIZE,
@@ -2453,7 +2442,7 @@ static constexpr std::array<Pid, 18> pids { {
 bool TextBase::readProperties(XmlReader& e)
 {
     const QStringRef& tag(e.name());
-    for (Pid i :pids) {
+    for (Pid i : TextBasePropertyId) {
         if (readProperty(tag, e, i)) {
             return true;
         }
@@ -2505,7 +2494,8 @@ Pid TextBase::propertyId(const QStringRef& name) const
     if (name == "text") {
         return Pid::TEXT;
     }
-    for (Pid pid : pids) {
+
+    for (Pid pid : TextBasePropertyId) {
         if (propertyName(pid) == name) {
             return pid;
         }
@@ -2680,7 +2670,6 @@ QString TextBase::plainText() const
 
 QString TextBase::xmlText() const
 {
-#if 1
     // this is way too expensive
     // what side effects has genText() ?
     // this method is const by design
@@ -2695,12 +2684,6 @@ QString TextBase::xmlText() const
         text = tmpText.get();
     }
     return text->_text;
-#else
-    if (textInvalid) {
-        genText();
-    }
-    return _text;
-#endif
 }
 
 //---------------------------------------------------------

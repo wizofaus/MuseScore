@@ -32,6 +32,7 @@ set(MODULE_SRC
     ${CMAKE_CURRENT_LIST_DIR}/diagnosticsmodule.cpp
     ${CMAKE_CURRENT_LIST_DIR}/diagnosticsmodule.h
     ${CMAKE_CURRENT_LIST_DIR}/idiagnosticspathsregister.h
+    ${CMAKE_CURRENT_LIST_DIR}/diagnosticutils.h
 
     ${CMAKE_CURRENT_LIST_DIR}/internal/diagnosticsactions.cpp
     ${CMAKE_CURRENT_LIST_DIR}/internal/diagnosticsactions.h
@@ -42,6 +43,18 @@ set(MODULE_SRC
 
     ${CMAKE_CURRENT_LIST_DIR}/view/diagnosticspathsmodel.cpp
     ${CMAKE_CURRENT_LIST_DIR}/view/diagnosticspathsmodel.h
+    ${CMAKE_CURRENT_LIST_DIR}/view/keynav/diagnosticnavigationmodel.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/view/keynav/diagnosticnavigationmodel.h
+    ${CMAKE_CURRENT_LIST_DIR}/view/keynav/abstractkeynavdevitem.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/view/keynav/abstractkeynavdevitem.h
+    ${CMAKE_CURRENT_LIST_DIR}/view/keynav/keynavdevcontrol.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/view/keynav/keynavdevcontrol.h
+    ${CMAKE_CURRENT_LIST_DIR}/view/keynav/keynavdevsubsection.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/view/keynav/keynavdevsubsection.h
+    ${CMAKE_CURRENT_LIST_DIR}/view/keynav/keynavdevsection.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/view/keynav/keynavdevsection.h
+    ${CMAKE_CURRENT_LIST_DIR}/view/diagnosticaccessiblemodel.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/view/diagnosticaccessiblemodel.h
     )
 
 include(${PROJECT_SOURCE_DIR}/build/module.cmake)

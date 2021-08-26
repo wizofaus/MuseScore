@@ -19,8 +19,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-#ifndef MU_SCORE_ACCESSIBLEELEMENT_H
-#define MU_SCORE_ACCESSIBLEELEMENT_H
+#ifndef MU_ENGRAVING_ACCESSIBLEELEMENT_H
+#define MU_ENGRAVING_ACCESSIBLEELEMENT_H
 
 #include "accessibility/iaccessible.h"
 #include "async/asyncable.h"
@@ -29,7 +29,7 @@
 
 //! NOTE At the moment this is just a concept, not a production-ready system, a lot of work yet.
 
-namespace mu::score {
+namespace mu::engraving {
 class AccessibleScore;
 class AccessibleElement : public accessibility::IAccessible, public async::Asyncable
 {
@@ -50,6 +50,7 @@ public:
 
     Role accessibleRole() const override;
     QString accessibleName() const override;
+    QString accessibleDescription() const override;
     bool accessibleState(State st) const override;
     QRect accessibleRect() const override;
 
@@ -69,4 +70,4 @@ private:
 };
 }
 
-#endif // MU_SCORE_ACCESSIBLEELEMENT_H
+#endif // MU_ENGRAVING_ACCESSIBLEELEMENT_H

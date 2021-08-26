@@ -26,8 +26,11 @@
 #include <limits>
 #include <utility>
 
+#include "diagnostics/diagnosticutils.h"
 #include "async/async.h"
 #include "log.h"
+
+#include "config.h"
 
 //#define NAVIGATION_LOGGING_ENABLED
 
@@ -273,8 +276,6 @@ static T* findByIndex(const std::set<T*>& set, const INavigation::Index& idx)
 
 void NavigationController::init()
 {
-    dispatcher()->reg(this, "nav-dev-show-controls", this, &NavigationController::devShowControls);
-
     dispatcher()->reg(this, "nav-next-section", this, &NavigationController::goToNextSection);
     dispatcher()->reg(this, "nav-prev-section", [this]() { goToPrevSection(false); });
     dispatcher()->reg(this, "nav-next-panel", this, &NavigationController::goToNextPanel);
@@ -325,17 +326,13 @@ const std::set<INavigationSection*>& NavigationController::sections() const
 bool NavigationController::eventFilter(QObject* watched, QEvent* event)
 {
     if (event->type() == QEvent::MouseButtonPress) {
+#ifdef BUILD_DIAGNOSTICS
+        if (!diagnostics::isDiagnosticHierarchy(watched))
+#endif
         resetActive();
     }
 
     return QObject::eventFilter(watched, event);
-}
-
-void NavigationController::devShowControls()
-{
-    if (!interactive()->isOpened(DEV_SHOW_CONTROLS_URI.uri()).val) {
-        interactive()->open(DEV_SHOW_CONTROLS_URI);
-    }
 }
 
 void NavigationController::resetActive()

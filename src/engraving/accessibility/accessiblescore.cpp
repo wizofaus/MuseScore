@@ -23,7 +23,7 @@
 
 #include "log.h"
 
-using namespace mu::score;
+using namespace mu::engraving;
 using namespace mu::accessibility;
 
 AccessibleScore::AccessibleScore(Ms::Score* score)
@@ -110,6 +110,11 @@ IAccessible::Role AccessibleScore::accessibleRole() const
 QString AccessibleScore::accessibleName() const
 {
     return m_score->title();
+}
+
+QString AccessibleScore::accessibleDescription() const
+{
+    return QString();
 }
 
 bool AccessibleScore::accessibleState(State st) const

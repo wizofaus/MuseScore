@@ -48,11 +48,14 @@
 #include "io/mscwriter.h"
 #include "io/mscreader.h"
 #include "engraving/draw/iimageprovider.h"
+#include "layout/layout.h"
+#include "layout/layoutoptions.h"
 
 class QMimeData;
 
 namespace mu::engraving {
 class EngravingProject;
+class AccessibleScore;
 }
 
 namespace mu::engraving::compat {
@@ -60,10 +63,6 @@ class ScoreAccess;
 class ReadScoreHook;
 class WriteScoreHook;
 class Read302;
-}
-
-namespace mu::score {
-class AccessibleScore;
 }
 
 namespace Ms {
@@ -126,7 +125,6 @@ class XmlWriter;
 class Channel;
 struct Interval;
 struct TEvent;
-struct LayoutContext;
 
 enum class Tid;
 enum class ClefType : signed char;
@@ -162,18 +160,6 @@ enum class Pad : char {
     DOTDOT,
     DOT3,
     DOT4
-};
-
-//---------------------------------------------------------
-//   LayoutMode
-//    PAGE   The normal page view, honors page and line breaks.
-//    LINE   The panoramic view, one long system
-//    FLOAT  The "reflow" mode, ignore page and line breaks
-//    SYSTEM The "never ending page", page break are turned into line break
-//---------------------------------------------------------
-
-enum class LayoutMode : char {
-    PAGE, FLOAT, LINE, SYSTEM
 };
 
 //---------------------------------------------------------
@@ -439,6 +425,7 @@ private:
 
     friend class mu::engraving::compat::ReadScoreHook;
     friend class mu::engraving::compat::Read302;
+    friend class mu::engraving::Layout;
 
     static std::set<Score*> validScores;
     int _linkId { 0 };
@@ -491,7 +478,6 @@ private:
     bool _showPageborders       { false };
     bool _markIrregularMeasures { true };
     bool _showInstrumentNames   { true };
-    bool _showVBox              { true };
     bool _printing              { false };        ///< True if we are drawing to a printer
     bool _autosaveDirty         { true };
     bool _savedCapture          { false };        ///< True if we saved an image capture
@@ -517,7 +503,10 @@ private:
     QString accInfo;                      ///< information about selected element(s) for use by screen-readers
     QString accMessage;                   ///< temporary status message for use by screen-readers
 
-    mu::score::AccessibleScore* m_accessible = nullptr;
+    mu::engraving::AccessibleScore* m_accessible = nullptr;
+
+    mu::engraving::Layout m_layout;
+    mu::engraving::LayoutOptions m_layoutOptions;
 
     ChordRest* nextMeasure(ChordRest* element, bool selectBehavior = false, bool mmRest = false);
     ChordRest* prevMeasure(ChordRest* element, bool mmRest = false);
@@ -537,18 +526,12 @@ private:
     void cmdMoveRest(Rest*, Direction);
     void cmdMoveLyrics(Lyrics*, Direction);
 
-    void createMMRest(Measure*, Measure*, const Fraction&);
-
-    void beamGraceNotes(Chord*, bool);
-
-    void checkSlurs();
     void checkScore();
 
     bool rewriteMeasures(Measure* fm, Measure* lm, const Fraction&, int staffIdx);
     bool rewriteMeasures(Measure* fm, const Fraction& ns, int staffIdx);
     void swingAdjustParams(Chord*, int&, int&, int, int);
     bool isSubdivided(ChordRest*, int);
-    void addAudioTrack();
     QList<Fraction> splitGapToMeasureBoundaries(ChordRest*, Fraction);
     void pasteChordRest(ChordRest* cr, const Fraction& tick, const Interval&);
 
@@ -560,8 +543,6 @@ private:
 
     void putNote(const Position&, bool replace);
 
-    void resetSystems(bool layoutAll, LayoutContext& lc);
-    void collectLinearSystem(LayoutContext& lc);
     void resetTempo();
     void resetTempoRange(const Fraction& tick1, const Fraction& tick2);
 
@@ -579,7 +560,6 @@ private:
 
 protected:
     int _fileDivision;   ///< division of current loading *.msc file
-    LayoutMode _layoutMode { LayoutMode::PAGE };
     SynthesizerState _synthesizerState;
 
     void createPlayEvents(Chord*);
@@ -641,10 +621,6 @@ public:
 
     Excerpt* excerpt() { return _excerpt; }
     void setExcerpt(Excerpt* e) { _excerpt = e; }
-
-    System* collectSystem(LayoutContext&);
-    void layoutSystemElements(System* system, LayoutContext& lc);
-    void getNextMeasure(LayoutContext&);        // get next measure for layout
 
     void resetAllPositions();
 
@@ -855,14 +831,12 @@ public:
     bool showPageborders() const { return _showPageborders; }
     bool markIrregularMeasures() const { return _markIrregularMeasures; }
     bool showInstrumentNames() const { return _showInstrumentNames; }
-    bool showVBox() const { return _showVBox; }
     void setShowInvisible(bool v);
     void setShowUnprintable(bool v);
     void setShowFrames(bool v);
     void setShowPageborders(bool v);
     void setMarkIrregularMeasures(bool v);
     void setShowInstrumentNames(bool v) { _showInstrumentNames = v; }
-    void setShowVBox(bool v) { _showVBox = v; }
 
     void print(mu::draw::Painter* printer, int page);
     ChordRest* getSelectedChordRest() const;
@@ -1052,9 +1026,6 @@ public:
     bool getPosition(Position* pos, const mu::PointF&, int voice) const;
 
     void cmdDeleteTuplet(Tuplet*, bool replaceWithRest);
-#if 0
-    void moveBracket(int staffIdx, int srcCol, int dstCol);
-#endif
     Measure* getCreateMeasure(const Fraction& tick);
 
     void adjustBracketsDel(int sidx, int eidx);
@@ -1069,9 +1040,6 @@ public:
 
     void nextInputPos(ChordRest* cr, bool);
     void cmdMirrorNoteHead();
-
-    qreal loWidth() const;
-    qreal loHeight() const;
 
     virtual int npages() const { return _pages.size(); }
     virtual int pageIdx(Page* page) const { return _pages.indexOf(page); }
@@ -1124,12 +1092,7 @@ public:
     void removeAudio();
 
     void doLayout();
-    void doLayoutRange(const Fraction&, const Fraction&);
-    void layoutLinear(bool layoutAll, LayoutContext& lc);
-
-    void layoutChords1(Segment* segment, int staffIdx);
-    qreal layoutChords2(std::vector<Note*>& notes, bool up);
-    void layoutChords3(std::vector<Note*>&, const Staff*, Segment*);
+    void doLayoutRange(const Fraction& st, const Fraction& et);
 
     SynthesizerState& synthesizerState() { return _synthesizerState; }
     void setSynthesizerState(const SynthesizerState& s);
@@ -1138,7 +1101,6 @@ public:
 
     MasterScore* masterScore() const { return _masterScore; }
     void setMasterScore(MasterScore* s) { _masterScore = s; }
-    void createRevision();
     void writeSegments(XmlWriter& xml, int strack, int etrack, Segment* sseg, Segment* eseg, bool, bool);
 
     const QMap<QString, QString>& metaTags() const { return _metaTags; }
@@ -1175,18 +1137,23 @@ public:
     void removeViewer(MuseScoreView* v) { viewer.removeAll(v); }
     const QList<MuseScoreView*>& getViewer() const { return viewer; }
 
-    LayoutMode layoutMode() const { return _layoutMode; }
-    void setLayoutMode(LayoutMode lm) { _layoutMode = lm; }
+    //! NOTE Layout
+    const mu::engraving::LayoutOptions& layoutOptions() const { return m_layoutOptions; }
+    void setLayoutMode(mu::engraving::LayoutMode lm) { m_layoutOptions.mode = lm; }
+    void setShowVBox(bool v) { m_layoutOptions.showVBox = v; }
 
-    bool floatMode() const { return layoutMode() == LayoutMode::FLOAT; }
-    bool pageMode() const { return layoutMode() == LayoutMode::PAGE; }
-    bool lineMode() const { return layoutMode() == LayoutMode::LINE; }
-    bool systemMode() const { return layoutMode() == LayoutMode::SYSTEM; }
+    // temporary methods
+    bool isLayoutMode(mu::engraving::LayoutMode lm) const { return m_layoutOptions.isMode(lm); }
+    mu::engraving::LayoutMode layoutMode() const { return m_layoutOptions.mode; }
+    bool floatMode() const { return m_layoutOptions.isMode(mu::engraving::LayoutMode::FLOAT); }
+    bool pageMode() const { return m_layoutOptions.isMode(mu::engraving::LayoutMode::PAGE); }
+    bool lineMode() const { return m_layoutOptions.isMode(mu::engraving::LayoutMode::LINE); }
+    bool systemMode() const { return m_layoutOptions.isMode(mu::engraving::LayoutMode::SYSTEM); }
+    // ----
 
     Tuplet* searchTuplet(XmlReader& e, int id);
     void cmdSelectAll();
     void cmdSelectSection();
-    void respace(std::vector<ChordRest*>* elements);
     void transposeSemitone(int semitone);
     void transposeDiatonicAlterations(TransposeDirection direction);
 
@@ -1269,7 +1236,7 @@ public:
     Measure* firstTrailingMeasure(ChordRest** cr = nullptr);
     ChordRest* cmdTopStaff(ChordRest* cr = nullptr);
 
-    mu::score::AccessibleScore* accessible() const;
+    mu::engraving::AccessibleScore* accessible() const;
     void setAccessibleInfo(QString s) { accInfo = s.remove(":").remove(";"); }
     QString accessibleInfo() const { return accInfo; }
 
@@ -1280,12 +1247,9 @@ public:
     QString createRehearsalMarkText(RehearsalMark* current) const;
     QString nextRehearsalMarkText(RehearsalMark* previous, RehearsalMark* current) const;
 
-    //@ ??
-//      Q_INVOKABLE void cropPage(qreal margins);
     bool sanityCheck(const QString& name = QString());
 
     bool checkKeys();
-    bool checkClefs();
 
     void switchToPageMode();
 
@@ -1309,11 +1273,6 @@ public:
 
     void cmdAddPitch(int note, bool addFlag, bool insert);
     void forAllLyrics(std::function<void(Lyrics*)> f);
-
-    System* getNextSystem(LayoutContext&);
-    void hideEmptyStaves(System* system, bool isFirstSystem);
-    void layoutLyrics(System*);
-    void createBeams(LayoutContext&, Measure*);
 
     constexpr static double defaultTempo() { return _defaultTempo; }
 

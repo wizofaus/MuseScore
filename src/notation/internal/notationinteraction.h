@@ -82,11 +82,12 @@ public:
     void select(const std::vector<Element*>& elements, SelectType type, int staffIndex = 0) override;
     void selectAll() override;
     void selectSection() override;
-    void selectFirstElement() override;
+    void selectFirstElement(bool frame = false) override;
     void selectLastElement() override;
     INotationSelectionPtr selection() const override;
     void clearSelection() override;
     async::Notification selectionChanged() const override;
+    void selectTopOrBottomOfChord(MoveDirection d) override;
 
     // SelectionFilter
     bool isSelectionTypeFiltered(SelectionFilterType type) const override;
@@ -115,6 +116,7 @@ public:
     void moveSelection(MoveDirection d, MoveSelectionType type) override;
     void movePitch(MoveDirection d, PitchMode mode) override; //! NOTE Requires a note to be selected
     void moveText(MoveDirection d, bool quickly) override;    //! NOTE Requires a text element to be selected
+    void moveChordRestToStaff(MoveDirection d) override;
 
     // Text edit
     bool isTextEditingStarted() const override;

@@ -55,7 +55,6 @@
 #include "key.h"
 #include "keysig.h"
 #include "layoutbreak.h"
-#include "layout.h"
 #include "note.h"
 #include "ottava.h"
 #include "page.h"
@@ -98,6 +97,7 @@
 #include "log.h"
 
 using namespace mu;
+using namespace mu::engraving;
 
 namespace Ms {
 //---------------------------------------------------------
@@ -1270,9 +1270,6 @@ void Measure::cmdRemoveStaves(int sStaff, int eStaff)
         MStaff* ms = *(m_mstaves.begin() + i);
         score()->undo(new RemoveMStaff(this, ms, i));
     }
-
-    // barLine
-    // TODO
 }
 
 //---------------------------------------------------------
@@ -1538,7 +1535,6 @@ Element* Measure::drop(EditData& data)
         break;
 
     case ElementType::STAFF_LIST:
-//TODO                  score()->pasteStaff(e, this, staffIdx);
         delete e;
         break;
 
@@ -1897,11 +1893,6 @@ void Measure::adjustToLen(Fraction nf, bool appendRestsIfNecessary)
                 rest->undoChangeProperty(Pid::DURATION, QVariant::fromValue<Fraction>(nf * stretch));
                 rest->undoChangeProperty(Pid::DURATION_TYPE, QVariant::fromValue<TDuration>(TDuration::DurationType::V_MEASURE));
             } else {          // if measure value did change, represent with rests actual measure value
-#if 0
-                // any reason not to do this instead?
-                s->undoRemoveElement(rest);
-                s->setRest(tick(), staffIdx * VOICES, nf * stretch, false, 0, false);
-#else
                 // convert the measure duration in a list of values (no dots for rests)
                 std::vector<TDuration> durList = toDurationList(nf * stretch, false, 0);
 
@@ -1921,7 +1912,6 @@ void Measure::adjustToLen(Fraction nf, bool appendRestsIfNecessary)
                     score()->undoAddCR(newRest, this, tickOffset);
                     tickOffset += newRest->actualTicks();
                 }
-#endif
             }
             continue;
         }
@@ -3590,7 +3580,7 @@ bool Measure::prevIsOneMeasureRepeat(int staffIdx) const
 
 qreal Measure::userStretch() const
 {
-    return score()->layoutMode() == LayoutMode::FLOAT ? 1.0 : m_userStretch;
+    return score()->layoutOptions().isMode(LayoutMode::FLOAT) ? 1.0 : m_userStretch;
 }
 
 //---------------------------------------------------------
@@ -3989,11 +3979,6 @@ qreal Measure::createEndBarLines(bool isLastMeasureInSystem)
     Measure* nm  = nextMeasure();
     qreal blw    = 0.0;
 
-#if 0
-#ifndef NDEBUG
-    computeMinWidth();
-#endif
-#endif
     qreal oldWidth = width();
 
     if (nm && nm->repeatStart() && !repeatEnd() && !isLastMeasureInSystem && next() == nm) {
@@ -4164,15 +4149,6 @@ qreal Measure::createEndBarLines(bool isLastMeasureInSystem)
         computeMinWidth(s, x, false);
     }
 
-#if 0
-#ifndef NDEBUG
-    qreal w = width();
-    computeMinWidth();
-    if (!qFuzzyCompare(w, width())) {
-        qDebug("width mismatch %f != %f at %d", w, width(), tick());
-    }
-#endif
-#endif
     return width() - oldWidth;
 }
 
@@ -4436,7 +4412,7 @@ void Measure::addSystemTrailer(Measure* nm)
     TimeSig* ts = nullptr;
     bool showCourtesySig = false;
     Segment* s = findSegmentR(SegmentType::TimeSigAnnounce, _rtick);
-    if (nm && score()->genCourtesyTimesig() && !isFinalMeasure && !score()->floatMode()) {
+    if (nm && score()->genCourtesyTimesig() && !isFinalMeasure && !score()->layoutOptions().isMode(LayoutMode::FLOAT)) {
         Segment* tss = nm->findSegmentR(SegmentType::TimeSig, Fraction(0, 1));
         if (tss) {
             int nstaves = score()->nstaves();
@@ -4721,8 +4697,6 @@ void Measure::computeMinWidth(Segment* s, qreal x, bool isSystemHeader)
             } else {
                 w = s->minHorizontalDistance(ns, false);
             }
-// printf("  min %f <%s>(%d) <%s>(%d)\n", s->x(), s->subTypeName(), s->enabled(), ns->subTypeName(), ns->enabled());
-#if 1
             // look back for collisions with previous segments
             // this is time consuming (ca. +5%) and probably requires more optimization
 
@@ -4773,7 +4747,6 @@ void Measure::computeMinWidth(Segment* s, qreal x, bool isSystemHeader)
                     break;
                 }
             }
-#endif
         } else {
             w = s->minRight();
         }

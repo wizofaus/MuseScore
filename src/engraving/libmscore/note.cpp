@@ -75,7 +75,7 @@
 #include "log.h"
 #include "config.h"
 
-#ifdef USE_SCORE_ACCESSIBLE_TREE
+#ifdef ENGRAVING_BUILD_ACCESSIBLE_TREE
 #include "accessibility/accessiblenote.h"
 #endif
 
@@ -688,8 +688,8 @@ NoteHead::Group NoteHead::headGroup() const
 
 Note::Note(Score* s)
     : Element(s, ElementFlag::MOVABLE
-#ifdef USE_SCORE_ACCESSIBLE_TREE
-              , new mu::score::AccessibleNote())
+#ifdef ENGRAVING_BUILD_ACCESSIBLE_TREE
+              , new mu::engraving::AccessibleNote())
 #else
               )
 #endif
@@ -2772,7 +2772,7 @@ void Note::verticalDrag(EditData& ed)
     if (tab) {
         const StringData* strData = staff()->part()->instrument(_tick)->stringData();
         int nString = ned->string + (st->upsideDown() ? -lineOffset : lineOffset);
-        int nFret   = strData->fret(_pitch, nString, staff(), _tick);
+        int nFret   = strData->fret(_pitch, nString, staff());
 
         if (nFret >= 0) {                        // no fret?
             if (fret() != nFret || string() != nString) {

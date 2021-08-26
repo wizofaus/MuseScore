@@ -26,6 +26,7 @@
 
 using namespace mu::instrumentsscene;
 using namespace mu::notation;
+using namespace mu::framework;
 
 InstrumentSettingsModel::InstrumentSettingsModel(QObject* parent)
     : QObject(parent)
@@ -37,7 +38,7 @@ void InstrumentSettingsModel::load(const QVariant& instrument)
     QVariantMap map = instrument.toMap();
 
     m_instrumentKey.partId = ID(map["partId"]);
-    m_instrumentKey.instrumentId = ID(map["instrumentId"]);
+    m_instrumentKey.instrumentId = map["instrumentId"].toString();
     m_partName = map["partName"].toString();
     m_instrumentName = map["instrumentName"].toString();
     m_instrumentAbbreviature = map["abbreviature"].toString();
@@ -61,7 +62,7 @@ void InstrumentSettingsModel::replaceInstrument()
         return;
     }
 
-    Instrument newInstrument = selectedInstrument.val;
+    const Instrument& newInstrument = selectedInstrument.val;
     masterNotationParts()->replaceInstrument(m_instrumentKey, newInstrument);
 
     m_instrumentKey.instrumentId = newInstrument.id();
@@ -69,6 +70,28 @@ void InstrumentSettingsModel::replaceInstrument()
     m_instrumentAbbreviature = newInstrument.abbreviature();
 
     emit dataChanged();
+}
+
+void InstrumentSettingsModel::resetAllFormatting()
+{
+    if (!masterNotationParts() || !notationParts()) {
+        return;
+    }
+
+    std::string title = mu::trc("instruments", "Are you sure you want to reset all formatting?");
+    std::string body = mu::trc("instruments", "This action can not be undone");
+
+    IInteractive::Button button = interactive()->question(title, body, {
+        IInteractive::Button::No,
+        IInteractive::Button::Yes
+    }).standartButton();
+
+    if (button == IInteractive::Button::No) {
+        return;
+    }
+
+    const Part* masterPart = masterNotationParts()->part(m_instrumentKey.partId);
+    notationParts()->replacePart(m_instrumentKey.partId, masterPart->clone());
 }
 
 QString InstrumentSettingsModel::instrumentName() const

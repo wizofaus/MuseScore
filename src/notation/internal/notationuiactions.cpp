@@ -88,6 +88,16 @@ const UiActionList NotationUiActions::m_actions = {
              QT_TRANSLATE_NOOP("action", "Down note in chord"),
              QT_TRANSLATE_NOOP("action", "Go to lower pitched note in chord")
              ),
+    UiAction("top-chord",
+             mu::context::UiCtxNotationFocused,
+             QT_TRANSLATE_NOOP("action", "Top note in chord"),
+             QT_TRANSLATE_NOOP("action", "Go to top note in chord")
+             ),
+    UiAction("bottom-chord",
+             mu::context::UiCtxNotationFocused,
+             QT_TRANSLATE_NOOP("action", "Bottom note in chord"),
+             QT_TRANSLATE_NOOP("action", "Go bottom note in chord")
+             ),
     UiAction("first-element",
              mu::context::UiCtxNotationFocused,
              QT_TRANSLATE_NOOP("action", "First element"),
@@ -97,6 +107,16 @@ const UiActionList NotationUiActions::m_actions = {
              mu::context::UiCtxNotationFocused,
              QT_TRANSLATE_NOOP("action", "Last element"),
              QT_TRANSLATE_NOOP("action", "Go to last element in score")
+             ),
+    UiAction("move-up",
+             mu::context::UiCtxNotationFocused,
+             QT_TRANSLATE_NOOP("action", "Move up"),
+             QT_TRANSLATE_NOOP("action", "Move chord/rest to staff above")
+             ),
+    UiAction("move-down",
+             mu::context::UiCtxNotationFocused,
+             QT_TRANSLATE_NOOP("action", "Move down"),
+             QT_TRANSLATE_NOOP("action", "Move chord/rest to staff below")
              ),
     UiAction("next-track",
              mu::context::UiCtxNotationFocused,
@@ -233,17 +253,17 @@ const UiActionList NotationUiActions::m_actions = {
              ),
     UiAction("edit-style",
              mu::context::UiCtxNotationOpened,
-             QT_TRANSLATE_NOOP("action", "Style..."),
+             QT_TRANSLATE_NOOP("action", "Style…"),
              QT_TRANSLATE_NOOP("action", "Edit style")
              ),
     UiAction("page-settings",
              mu::context::UiCtxNotationOpened,
-             QT_TRANSLATE_NOOP("action", "Page settings..."),
+             QT_TRANSLATE_NOOP("action", "Page settings…"),
              QT_TRANSLATE_NOOP("action", "Page settings")
              ),
     UiAction("load-style",
              mu::context::UiCtxNotationOpened,
-             QT_TRANSLATE_NOOP("action", "Load style..."),
+             QT_TRANSLATE_NOOP("action", "Load style…"),
              QT_TRANSLATE_NOOP("action", "Load style")
              ),
     UiAction("save-style",
@@ -253,7 +273,7 @@ const UiActionList NotationUiActions::m_actions = {
              ),
     UiAction("transpose",
              mu::context::UiCtxNotationOpened,
-             QT_TRANSLATE_NOOP("action", "&Transpose..."),
+             QT_TRANSLATE_NOOP("action", "&Transpose…"),
              QT_TRANSLATE_NOOP("action", "Transpose")
              ),
     UiAction("explode",

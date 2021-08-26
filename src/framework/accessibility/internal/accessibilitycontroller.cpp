@@ -27,9 +27,8 @@
 
 #include "accessibleobject.h"
 #include "accessibleiteminterface.h"
-#include "dev/accessibledevmodel.h"
-
 #include "async/async.h"
+
 #include "log.h"
 
 //#define ACCESSIBILITY_LOGGING_ENABLED
@@ -41,8 +40,6 @@
 #endif
 
 using namespace mu::accessibility;
-
-static const mu::UriQuery DEV_SHOW_TREE_URI("musescore://devtools/accessible/tree?sync=false&modal=false");
 
 AccessibilityController::~AccessibilityController()
 {
@@ -70,48 +67,6 @@ static void rootObjectHandlerNoop(QObject*)
 {
 }
 
-static void debug_dumpItem(QAccessibleInterface* item, QTextStream& stream, QString& level)
-{
-    QAccessibleInterface* prn = item->parent();
-    stream << level
-           << item->text(QAccessible::Name)
-           << " parent: " << (prn ? prn->text(QAccessible::Name) : QString("null"))
-           << " childCount: " << item->childCount()
-           << Qt::endl;
-
-    QAccessible::State st = item->state();
-    stream << level
-           << "state:"
-           << " invisible: " << st.invisible
-           << " invalid: " << st.invalid
-           << " disabled: " << st.disabled
-           << " active: " << st.active
-           << " focusable: " << st.focusable
-           << " focused: " << st.focused
-           << Qt::endl;
-
-    level += "  ";
-    int count = item->childCount();
-    for (int i = 0; i < count; ++i) {
-        QAccessibleInterface* ch = item->child(i);
-        debug_dumpItem(ch, stream, level);
-    }
-    level.chop(2);
-}
-
-static void debug_dumpTree(QAccessibleInterface* item)
-{
-    QString str;
-    QTextStream stream(&str);
-    QString level;
-
-    debug_dumpItem(item, stream, level);
-
-    stream.flush();
-    LOGI() << "================================================\n";
-    std::cout << str.toStdString() << '\n';
-}
-
 void AccessibilityController::init()
 {
     QAccessible::installFactory(muAccessibleFactory);
@@ -121,22 +76,10 @@ void AccessibilityController::init()
 
     QAccessible::installRootObjectHandler(nullptr);
     QAccessible::setRootObject(self.object);
-    AccessibleDevModel::setRootObject(self.object);
 
     //! NOTE Disabled any events from Qt
     QAccessible::installRootObjectHandler(rootObjectHandlerNoop);
     QAccessible::installUpdateHandler(updateHandlerNoop);
-
-    dispatcher()->reg(this, "accessibility-dev-show-tree", [this]() {
-        if (!interactive()->isOpened(DEV_SHOW_TREE_URI.uri()).val) {
-            interactive()->open(DEV_SHOW_TREE_URI);
-        }
-    });
-
-    dispatcher()->reg(this, "accessibility-dev-dump-tree", [this]() {
-        const Item& self = findItem(this);
-        debug_dumpTree(self.iface);
-    });
 }
 
 const IAccessible* AccessibilityController::accessibleRoot() const
@@ -211,6 +154,8 @@ void AccessibilityController::propertyChanged(IAccessible* item, IAccessible::Pr
         break;
     case IAccessible::Property::Name: etype = QAccessible::NameChanged;
         break;
+    case IAccessible::Property::Description: etype = QAccessible::DescriptionChanged;
+        break;
     }
 
     QAccessibleEvent ev(it.object, etype);
@@ -276,6 +221,13 @@ void AccessibilityController::sendEvent(QAccessibleEvent* ev)
     QAccessible::updateAccessibility(ev);
     //! NOTE Disabled any events from Qt
     QAccessible::installUpdateHandler(updateHandlerNoop);
+
+    m_eventSent.send(ev);
+}
+
+mu::async::Channel<QAccessibleEvent*> AccessibilityController::eventSent() const
+{
+    return m_eventSent;
 }
 
 const AccessibilityController::Item& AccessibilityController::findItem(const IAccessible* aitem) const
@@ -381,6 +333,11 @@ IAccessible::Role AccessibilityController::accessibleRole() const
 QString AccessibilityController::accessibleName() const
 {
     return QString("AccessibilityController");
+}
+
+QString AccessibilityController::accessibleDescription() const
+{
+    return QString();
 }
 
 bool AccessibilityController::accessibleState(State st) const

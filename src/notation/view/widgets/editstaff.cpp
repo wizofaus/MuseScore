@@ -33,12 +33,14 @@
 #include "libmscore/utils.h"
 #include "libmscore/undo.h"
 #include "libmscore/iname.h"
+#include "libmscore/system.h"
 
-#include "log.h"
 #include "translation.h"
 
 #include "ui/view/iconcodes.h"
 #include "widgetstatestore.h"
+
+#include "log.h"
 
 using namespace mu::notation;
 using namespace mu::ui;
@@ -479,9 +481,6 @@ void EditStaff::applyStaffProperties()
     config.clefTypeList = m_instrument.clefType(m_orgStaff->rstaff());
 
     notationParts()->setStaffConfig(m_orgStaff->id(), config);
-
-    // TODO
-    //    notationParts()->setStaffType(m_staff->id(), *(m_staff->staffType(Fraction(0, 1))));
 }
 
 void EditStaff::applyPartProperties()
